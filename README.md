@@ -27,7 +27,7 @@ These are always registered regardless of `routes.yaml`.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/health` | None | Returns `{ "status": "ok", "routes": N }`. Used by Docker healthcheck. |
+| `GET` | `/health` | None | Returns `{ "status": "ok", "routes": N }`. Used by Docker healthcheck and nginx upstream health checks. |
 | `GET` | `/.well-known/jwks.json` | None | Proxied to `USER_SERVICE_URL`. Lets other services fetch the RS256 public key as a JWK Set. |
 
 ---
@@ -183,8 +183,10 @@ npm run dev       # tsx watch — restarts on source file changes
 
 ## Running with Docker
 
-The api-gw is the **only** service in the platform that exposes a public port.
-All other services are reachable only via `katisha-net` by container name.
+The api-gw does **not** expose a public port. Nginx (provisioned separately in
+the infra repo) is the sole public entry point — it listens on 443/80 and
+reverse-proxies to `http://katisha-api-gw:3000` over `katisha-net`. All
+services are reachable only by container name on the internal network.
 
 ```bash
 # Create the shared network once (idempotent)

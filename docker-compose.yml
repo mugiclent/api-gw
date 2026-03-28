@@ -3,8 +3,6 @@ services:
     image: ${DOCKER_USERNAME}/katisha-api-gw:${IMAGE_TAG:-latest}
     container_name: katisha-api-gw
     restart: unless-stopped
-    ports:
-      - "3000:3000"        # api-gw is the ONLY service with a public port
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
