@@ -390,8 +390,6 @@ services:
     image: ${DOCKER_USERNAME}/katisha-api-gw:${IMAGE_TAG:-latest}
     container_name: katisha-api-gw
     restart: unless-stopped
-    ports:
-      - "3000:3000"        # api-gw is the ONLY service with a public port
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
@@ -408,9 +406,10 @@ networks:
     external: true
 ```
 
-The api-gw is the **only** service in the platform that exposes a public port.
-All other services (user-service, etc.) have no `ports:` section and are
-reachable only via `katisha-net` by container name.
+No service in the platform exposes a public port. Nginx (provisioned in the
+infra repo) is the sole public entry point — it listens on 443/80 and
+reverse-proxies to `http://katisha-api-gw:3000` over `katisha-net`. The
+api-gw is reachable only by container name on the internal network.
 
 ---
 
@@ -478,7 +477,7 @@ All of the following are hard constraints from `CLAUDE.md` at the repo root.
 Violating any of them breaks other services silently.
 
 - Service name in event envelopes: `"api-gw"`
-- Port: `3000` (already in the platform port registry — do not change)
+- Internal port: `3000` (already in the platform port registry — do not change; no public port exposure)
 - Header names injected downstream: exactly `x-user-id`, `x-org-id`,
   `x-user-type`, `x-user-roles`, `x-user-rules` (Express lowercases them)
 - Error response shape: `{ "error": { "code": "...", "message": "..." } }`
