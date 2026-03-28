@@ -1,0 +1,21 @@
+services:
+  api-gw:
+    image: ${DOCKER_USERNAME}/katisha-api-gw:${IMAGE_TAG:-latest}
+    container_name: katisha-api-gw
+    restart: unless-stopped
+    ports:
+      - "3000:3000"        # api-gw is the ONLY service with a public port
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      CONFIG_REPO_URL: ${CONFIG_REPO_URL}
+      CONFIG_REPO_TOKEN: ${CONFIG_REPO_TOKEN}
+      CONFIG_POLL_INTERVAL_MS: ${CONFIG_POLL_INTERVAL_MS}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+    networks:
+      - katisha-net
+
+networks:
+  katisha-net:
+    external: true
