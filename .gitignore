@@ -1,0 +1,20 @@
+# Environment variables — never commit real env files
+.env
+.env.local
+.env.*.local
+
+# Production scripts — contain real secrets, never commit
+scripts/*.prod.sh
+
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
