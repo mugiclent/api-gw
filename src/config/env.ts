@@ -9,7 +9,7 @@ const schema = Joi.object({
 
   // Config repo (private GitHub repository hosting routes.yaml)
   CONFIG_REPO_URL: Joi.string().uri().required(),
-  CONFIG_REPO_TOKEN: Joi.string().required(),
+  CONFIG_REPO_TOKEN: Joi.string().allow('').default(''),
   CONFIG_POLL_INTERVAL_MS: Joi.number().default(30000),
 
   // User service (for JWKS proxy)
@@ -24,7 +24,7 @@ export const env = value as {
   PORT: number;
   JWT_PUBLIC_KEY: string;
   CONFIG_REPO_URL: string;
-  CONFIG_REPO_TOKEN: string;
+  CONFIG_REPO_TOKEN: string; // empty string when repo is public
   CONFIG_POLL_INTERVAL_MS: number;
   USER_SERVICE_URL: string;
 };

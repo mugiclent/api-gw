@@ -15,9 +15,11 @@ async function fetchAndApply(): Promise<void> {
   let body: string;
 
   try {
-    const response = await fetch(config.configRepo.url, {
-      headers: { Authorization: `token ${config.configRepo.token}` },
-    });
+    const headers: Record<string, string> = {};
+    if (config.configRepo.token) {
+      headers['Authorization'] = `token ${config.configRepo.token}`;
+    }
+    const response = await fetch(config.configRepo.url, { headers });
 
     if (!response.ok) {
       console.error(`[config-watcher] fetch failed: HTTP ${response.status}`);
