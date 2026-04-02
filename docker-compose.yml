@@ -1,7 +1,7 @@
 services:
   api-gw:
     image: ${DOCKER_USERNAME}/katisha-api-gw:${IMAGE_TAG:-latest}
-    container_name: katisha-api-gw
+    container_name: api-gw
     restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV}
