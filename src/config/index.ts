@@ -11,9 +11,9 @@ export const config = {
   },
 
   configRepo: {
-    url: env.CONFIG_REPO_URL,
-    token: env.CONFIG_REPO_TOKEN,
-    pollIntervalMs: env.CONFIG_POLL_INTERVAL_MS,
+    url: env.ROUTES_URL,
+    token: env.ROUTES_TOKEN,
+    pollIntervalMs: env.ROUTES_POLL_INTERVAL_MS,
   },
 
   userService: {

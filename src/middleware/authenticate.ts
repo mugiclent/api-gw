@@ -29,7 +29,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
   const token = parts[1];
 
   try {
-    const payload = jwt.verify(token, config.jwt.publicKey, { algorithms: ['RS256'] }) as JwtPayload;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payload = jwt.verify(token, config.jwt.publicKey, { algorithms: ['EdDSA' as any] }) as JwtPayload;
 
     delete req.headers['authorization'];
 

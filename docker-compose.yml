@@ -7,12 +7,18 @@ services:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
-      CONFIG_REPO_URL: ${CONFIG_REPO_URL}
-      CONFIG_REPO_TOKEN: ${CONFIG_REPO_TOKEN}
-      CONFIG_POLL_INTERVAL_MS: ${CONFIG_POLL_INTERVAL_MS}
+      ROUTES_URL: ${ROUTES_URL}
+      ROUTES_TOKEN: ${ROUTES_TOKEN}
+      ROUTES_POLL_INTERVAL_MS: ${ROUTES_POLL_INTERVAL_MS}
       USER_SERVICE_URL: ${USER_SERVICE_URL}
     networks:
       - katisha-net
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8090/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 networks:
   katisha-net:

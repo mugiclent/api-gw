@@ -4,13 +4,13 @@ const schema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'test', 'production').required(),
   PORT: Joi.number().default(3000),
 
-  // JWT — RS256 public key only (private key lives in user-service)
+  // JWT — EdDSA public key only (private key lives in user-service)
   JWT_PUBLIC_KEY: Joi.string().required(),
 
-  // Config repo (private GitHub repository hosting routes.yaml)
-  CONFIG_REPO_URL: Joi.string().uri().required(),
-  CONFIG_REPO_TOKEN: Joi.string().allow('').default(''),
-  CONFIG_POLL_INTERVAL_MS: Joi.number().default(30000),
+  // Routes file — raw URL to routes.yaml, polled for live config updates
+  ROUTES_URL: Joi.string().uri().required(),
+  ROUTES_TOKEN: Joi.string().allow('').default(''),
+  ROUTES_POLL_INTERVAL_MS: Joi.number().default(30000),
 
   // User service (for JWKS proxy)
   USER_SERVICE_URL: Joi.string().uri().required(),
@@ -23,8 +23,8 @@ export const env = value as {
   NODE_ENV: 'development' | 'test' | 'production';
   PORT: number;
   JWT_PUBLIC_KEY: string;
-  CONFIG_REPO_URL: string;
-  CONFIG_REPO_TOKEN: string; // empty string when repo is public
-  CONFIG_POLL_INTERVAL_MS: number;
+  ROUTES_URL: string;
+  ROUTES_TOKEN: string; // empty string when repo is public
+  ROUTES_POLL_INTERVAL_MS: number;
   USER_SERVICE_URL: string;
 };
