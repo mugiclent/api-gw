@@ -1,6 +1,6 @@
 services:
   api-gw:
-    image: ${DOCKER_USERNAME}/katisha-api-gw:${IMAGE_TAG:-latest}
+    image: ${DOCKER_USERNAME}/api-gw:${IMAGE_TAG:-latest}
     container_name: api-gw
     restart: unless-stopped
     environment:
