@@ -7,6 +7,9 @@ actions.env
 # Production scripts — contain real secrets, never commit
 scripts/*.prod.sh
 
+# Local dev overrides — never commit
+docker-compose.override.yml
+
 # Build output
 dist/
 
