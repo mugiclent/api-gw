@@ -1,5 +1,6 @@
 services:
   api-gw:
+    build: .
     image: ${DOCKER_USERNAME}/api-gw:${IMAGE_TAG:-latest}
     container_name: api-gw
     restart: unless-stopped

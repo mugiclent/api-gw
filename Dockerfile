@@ -24,4 +24,4 @@ ENV PORT=8090
 
 EXPOSE 8090
 
-CMD ["dist/index.js"]
+CMD ["node", "dist/index.js"]
