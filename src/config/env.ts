@@ -14,6 +14,9 @@ const schema = Joi.object({
 
   // User service (for JWKS proxy)
   USER_SERVICE_URL: Joi.string().uri().required(),
+
+  // CORS — comma-separated list of allowed origins
+  CORS_ORIGINS: Joi.string().required(),
 });
 
 const { error, value } = schema.validate(process.env, { allowUnknown: true });
@@ -27,4 +30,5 @@ export const env = value as {
   ROUTES_TOKEN: string; // empty string when repo is public
   ROUTES_POLL_INTERVAL_MS: number;
   USER_SERVICE_URL: string;
+  CORS_ORIGINS: string;
 };

@@ -19,6 +19,7 @@ vi.mock('../../src/config/index.js', () => ({
   config: {
     jwt: { publicKey: 'test-public-key' },
     userService: { url: 'http://katisha-user-service:3001' },
+    cors: { origins: ['http://localhost:3000'] },
   },
 }));
 

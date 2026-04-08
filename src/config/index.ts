@@ -19,4 +19,8 @@ export const config = {
   userService: {
     url: env.USER_SERVICE_URL,
   },
+
+  cors: {
+    origins: env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean),
+  },
 } as const;

@@ -1,12 +1,22 @@
 import express from 'express';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { healthRouter } from './routes/health.js';
 import { jwksRouter } from './routes/jwks.js';
 import { proxyRouter } from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { config } from './config/index.js';
 
 export function createApp() {
   const app = express();
+
+  app.use(cors({
+    origin: config.cors.origins,
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Type'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  }));
+
   app.use(cookieParser());
 
   // Special routes — always registered first so routes.yaml can never shadow them
