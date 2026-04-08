@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { healthRouter } from './routes/health.js';
 import { jwksRouter } from './routes/jwks.js';
 import { proxyRouter } from './routes/index.js';
@@ -6,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 export function createApp() {
   const app = express();
+  app.use(cookieParser());
 
   // Special routes — always registered first so routes.yaml can never shadow them
   app.use(healthRouter);

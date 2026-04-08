@@ -15,10 +15,13 @@
     "lint:fix": "eslint src/ tests/ --fix"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.3.1",
     "express": "^5.0.1",
     "http-proxy-middleware": "^3.0.3",
     "joi": "^17.13.3",
+    "jose": "^6.2.2",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2"
   },
