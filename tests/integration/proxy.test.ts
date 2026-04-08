@@ -3,7 +3,6 @@ import request from 'supertest';
 import type { Request, Response, NextFunction } from 'express';
 
 // ── Mock http-proxy-middleware — no real upstream calls ───────────────────────
-// vi.hoisted ensures mockProxyHandler is available in the vi.mock() factory
 const { mockProxyHandler } = vi.hoisted(() => {
   const mockProxyHandler = vi.fn((_req: Request, res: Response, _next: NextFunction) => {
     res.status(200).json({ proxied: true });
@@ -23,13 +22,15 @@ vi.mock('../../src/config/index.js', () => ({
   },
 }));
 
-// ── Mock jsonwebtoken ─────────────────────────────────────────────────────────
-const { mockVerify } = vi.hoisted(() => {
-  const mockVerify = vi.fn();
-  return { mockVerify };
+// ── Mock jose ─────────────────────────────────────────────────────────────────
+const { mockJwtVerify } = vi.hoisted(() => {
+  const mockJwtVerify = vi.fn();
+  return { mockJwtVerify };
 });
-vi.mock('jsonwebtoken', () => ({
-  default: { verify: mockVerify },
+
+vi.mock('jose', () => ({
+  jwtVerify: mockJwtVerify,
+  importSPKI: vi.fn().mockResolvedValue('mock-public-key'),
 }));
 
 // ── Seed route table with known routes ────────────────────────────────────────
@@ -47,6 +48,7 @@ const validJwtPayload = {
   user_type: 'staff',
   role_slugs: ['admin'],
   rules: [],
+  locale: 'rw',
   iat: Math.floor(Date.now() / 1000),
   exp: Math.floor(Date.now() / 1000) + 900,
 };
@@ -82,11 +84,11 @@ describe('proxy routing', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ proxied: true });
-    expect(mockVerify).not.toHaveBeenCalled();
+    expect(mockJwtVerify).not.toHaveBeenCalled();
   });
 
   it('auth: true route with valid JWT → headers injected, request proxied', async () => {
-    mockVerify.mockReturnValueOnce(validJwtPayload);
+    mockJwtVerify.mockResolvedValueOnce({ payload: validJwtPayload });
     mockProxyHandler.mockImplementationOnce((req: Request, res: Response) => {
       res.status(200).json({
         proxied: true,
