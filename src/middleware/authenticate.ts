@@ -9,6 +9,7 @@ interface JwtPayload {
   role_slugs: string[];
   rules: unknown[];
   locale?: string;
+  session_id?: string;
   iat: number;
   exp: number;
 }
@@ -54,6 +55,11 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     req.headers['x-user-roles'] = JSON.stringify(p.role_slugs);
     req.headers['x-user-rules'] = JSON.stringify(p.rules);
     req.headers['x-user-locale'] = p.locale ?? 'rw';
+    if (p.session_id) {
+      req.headers['x-session-id'] = p.session_id;
+    } else {
+      delete req.headers['x-session-id'];
+    }
 
     next();
   } catch {

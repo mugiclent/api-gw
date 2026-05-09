@@ -22,3 +22,4 @@ coverage/
 # IDE
 .vscode/
 .idea/
+routes.local.yaml

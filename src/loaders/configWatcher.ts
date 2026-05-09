@@ -1,4 +1,6 @@
 import { createHash } from 'crypto';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
 import yaml from 'js-yaml';
 import { config } from '../config/index.js';
 import { routeTable } from '../utils/routeTable.js';
@@ -8,28 +10,35 @@ interface RoutesYaml {
   routes: Route[];
 }
 
+const LOCAL_OVERRIDE = resolve(process.cwd(), 'routes.local.yaml');
+
 let lastHash = '';
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
 async function fetchAndApply(): Promise<void> {
   let body: string;
 
-  try {
-    const headers: Record<string, string> = {};
-    if (config.configRepo.token) {
-      headers['Authorization'] = `token ${config.configRepo.token}`;
-    }
-    const response = await fetch(config.configRepo.url, { headers });
+  // Local override takes precedence — never fetches from GitHub in this mode.
+  if (existsSync(LOCAL_OVERRIDE)) {
+    body = readFileSync(LOCAL_OVERRIDE, 'utf8');
+  } else {
+    try {
+      const headers: Record<string, string> = {};
+      if (config.configRepo.token) {
+        headers['Authorization'] = `token ${config.configRepo.token}`;
+      }
+      const response = await fetch(config.configRepo.url, { headers });
 
-    if (!response.ok) {
-      console.error(`[config-watcher] fetch failed: HTTP ${response.status}`);
+      if (!response.ok) {
+        console.error(`[config-watcher] fetch failed: HTTP ${response.status}`);
+        return;
+      }
+
+      body = await response.text();
+    } catch (err) {
+      console.error('[config-watcher] fetch error:', err);
       return;
     }
-
-    body = await response.text();
-  } catch (err) {
-    console.error('[config-watcher] fetch error:', err);
-    return;
   }
 
   const hash = createHash('sha256').update(body).digest('hex');
