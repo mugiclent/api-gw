@@ -21,6 +21,7 @@ export const config = {
   },
 
   cors: {
-    origins: env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean),
+    // true = reflect request origin (allows all origins, compatible with credentials: true)
+    origins: env.CORS_ORIGINS.trim() === '*' ? true : env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean),
   },
 } as const;
