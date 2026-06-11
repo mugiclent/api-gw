@@ -5,6 +5,7 @@ import { healthRouter } from './routes/health.js';
 import { jwksRouter } from './routes/jwks.js';
 import { proxyRouter } from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { localeResolver } from './middleware/locale.js';
 import { config } from './config/index.js';
 
 export function createApp() {
@@ -13,11 +14,15 @@ export function createApp() {
   app.use(cors({
     origin: config.cors.origins,
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Type', 'X-Sudo-Token', 'X-Locale'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }));
 
   app.use(cookieParser());
+
+  // Resolve the trusted locale header (and strip any client-spoofed one) for
+  // every request — including anonymous ones, which never reach authenticate.
+  app.use(localeResolver);
 
   // Special routes — always registered first so routes.yaml can never shadow them
   app.use(healthRouter);

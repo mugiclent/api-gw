@@ -1,6 +1,8 @@
 import { jwtVerify, importSPKI } from 'jose';
 import type { Request, Response, NextFunction } from 'express';
 import { config } from '../config/index.js';
+import { isRevoked } from '../loaders/redis.js';
+import { selectedLocale, acceptLanguageLocale } from './locale.js';
 
 interface JwtPayload {
   sub: string;
@@ -43,6 +45,13 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     const { payload } = await jwtVerify(token, key, { algorithms: ['EdDSA'] });
     const p = payload as unknown as JwtPayload;
 
+    // Revocation: the JWT is cryptographically valid, but the session may have
+    // been killed before its 15-min expiry (logout, suspend, delete, org block).
+    if (await isRevoked({ sub: p.sub, org_id: p.org_id, session_id: p.session_id })) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Session revoked' } });
+      return;
+    }
+
     delete req.headers['authorization'];
 
     req.headers['x-user-id'] = p.sub;
@@ -54,7 +63,10 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     req.headers['x-user-type'] = p.user_type;
     req.headers['x-user-roles'] = JSON.stringify(p.role_slugs);
     req.headers['x-user-rules'] = JSON.stringify(p.rules);
-    req.headers['x-user-locale'] = p.locale ?? 'rw';
+    // X-Locale (explicit pick) > JWT claim (saved preference) > Accept-Language
+    // (browser default) > 'rw'. So a mid-session switch via X-Locale takes effect
+    // without re-issuing the token, but the saved preference beats the browser.
+    req.headers['x-user-locale'] = selectedLocale(req) ?? p.locale ?? acceptLanguageLocale(req) ?? 'rw';
     if (p.session_id) {
       req.headers['x-session-id'] = p.session_id;
     } else {

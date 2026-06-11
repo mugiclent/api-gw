@@ -15,6 +15,13 @@ const schema = Joi.object({
   // User service (for JWKS proxy)
   USER_SERVICE_URL: Joi.string().uri().required(),
 
+  // Redis — shared instance with user-service. Used to enforce token revocation
+  // by reading the blacklist:user / blacklist:org / blacklist:session keys that
+  // user-service writes on suspend / delete / logout / logout-all.
+  REDIS_PASSWORD: Joi.string().required(),
+  REDIS_HOST: Joi.string().default('redis'),
+  REDIS_PORT: Joi.number().default(6379),
+
   // CORS — comma-separated list of allowed origins
   CORS_ORIGINS: Joi.string().required(),
 });
@@ -30,5 +37,8 @@ export const env = value as {
   ROUTES_TOKEN: string; // empty string when repo is public
   ROUTES_POLL_INTERVAL_MS: number;
   USER_SERVICE_URL: string;
+  REDIS_PASSWORD: string;
+  REDIS_HOST: string;
+  REDIS_PORT: number;
   CORS_ORIGINS: string;
 };

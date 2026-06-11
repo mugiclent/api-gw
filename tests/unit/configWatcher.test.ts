@@ -23,6 +23,14 @@ vi.mock('../../src/utils/routeTable.js', () => ({
   },
 }));
 
+// configWatcher prefers a local routes.local.yaml when present (and that file
+// exists in the repo). Force the remote-fetch path so these tests exercise the
+// fetch/hash/apply logic they were written for, regardless of the working dir.
+vi.mock('fs', () => ({
+  existsSync: () => false,
+  readFileSync: () => '',
+}));
+
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
 const validYaml = `
