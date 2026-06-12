@@ -1,7 +1,10 @@
 export interface Route {
   path: string;    // prefix, e.g. "/api/v1/users"
   target: string;  // e.g. "http://katisha-user-service:3001"
-  auth: boolean;
+  // true       → JWT required (401 if missing/invalid)
+  // 'optional' → verify + translate a JWT if present, else proceed anonymously
+  // false      → fully public, no JWT translation
+  auth: boolean | 'optional';
 }
 
 let routes: Route[] = [];

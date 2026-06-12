@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { RequestHandler, Response } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { routeTable } from '../utils/routeTable.js';
-import { authenticate } from '../middleware/authenticate.js';
+import { authenticate, optionalAuthenticate } from '../middleware/authenticate.js';
 
 const proxyCache = new Map<string, RequestHandler>();
 
@@ -36,11 +36,15 @@ proxyRouter.use((req, res, next) => {
     });
     return;
   }
-  if (route.auth) {
-    authenticate(req, res, () => {
-      getProxy(route.target)(req, res, next);
-    });
+  const forward = () => getProxy(route.target)(req, res, next);
+
+  if (route.auth === true) {
+    authenticate(req, res, forward);
     return;
   }
-  getProxy(route.target)(req, res, next);
+  if (route.auth === 'optional') {
+    void optionalAuthenticate(req, res, forward);
+    return;
+  }
+  forward();
 });

@@ -36,11 +36,13 @@ vi.mock('jose', () => ({
 
 // ── Seed route table with known routes ────────────────────────────────────────
 import { routeTable } from '../../src/utils/routeTable.js';
+import type { Route } from '../../src/utils/routeTable.js';
 import { createApp } from '../../src/app.js';
 
-const testRoutes = [
+const testRoutes: Route[] = [
   { path: '/api/v1/auth', target: 'http://katisha-user-service:3001', auth: false },
   { path: '/api/v1/users', target: 'http://katisha-user-service:3001', auth: true },
+  { path: '/api/v1/prices', target: 'http://trip-svc:8092', auth: 'optional' },
 ];
 
 const validJwtPayload = {
@@ -121,6 +123,62 @@ describe('proxy routing', () => {
 
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({ error: { code: 'NOT_FOUND' } });
+  });
+
+  it('auth: optional route without JWT → proxied anonymously (no identity headers)', async () => {
+    mockProxyHandler.mockImplementationOnce((req: Request, res: Response) => {
+      res.status(200).json({ proxied: true, userId: req.headers['x-user-id'] ?? null });
+    });
+
+    const res = await request(app).get('/api/v1/prices');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ proxied: true, userId: null });
+    expect(mockJwtVerify).not.toHaveBeenCalled();
+  });
+
+  it('auth: optional route with valid JWT → identity headers injected', async () => {
+    mockJwtVerify.mockResolvedValueOnce({ payload: validJwtPayload });
+    mockProxyHandler.mockImplementationOnce((req: Request, res: Response) => {
+      res.status(200).json({ userId: req.headers['x-user-id'], orgId: req.headers['x-org-id'] });
+    });
+
+    const res = await request(app).get('/api/v1/prices').set('Authorization', 'Bearer valid-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.userId).toBe(validJwtPayload.sub);
+    expect(res.body.orgId).toBe(validJwtPayload.org_id);
+  });
+
+  it('auth: optional route with invalid JWT → proceeds anonymously (no 401)', async () => {
+    mockJwtVerify.mockRejectedValueOnce(new Error('bad token'));
+    mockProxyHandler.mockImplementationOnce((req: Request, res: Response) => {
+      res.status(200).json({ proxied: true, userId: req.headers['x-user-id'] ?? null });
+    });
+
+    const res = await request(app).get('/api/v1/prices').set('Authorization', 'Bearer garbage');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ proxied: true, userId: null });
+  });
+
+  it('strips spoofed identity headers from a public/anonymous request', async () => {
+    mockProxyHandler.mockImplementationOnce((req: Request, res: Response) => {
+      res.status(200).json({
+        userId: req.headers['x-user-id'] ?? null,
+        orgId: req.headers['x-org-id'] ?? null,
+        rules: req.headers['x-user-rules'] ?? null,
+      });
+    });
+
+    const res = await request(app)
+      .get('/api/v1/prices')
+      .set('X-User-Id', 'attacker')
+      .set('X-Org-Id', 'victim-org')
+      .set('X-User-Rules', JSON.stringify([{ action: 'manage', subject: 'all' }]));
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ userId: null, orgId: null, rules: null });
   });
 
   it('X-Client-Type forwarded unchanged on auth: false route', async () => {
