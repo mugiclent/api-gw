@@ -8,6 +8,7 @@ interface JwtPayload {
   sub: string;
   org_id: string | null;
   user_type: 'passenger' | 'staff';
+  phone_number?: string | null;
   role_slugs: string[];
   rules: unknown[];
   locale?: string;
@@ -58,6 +59,9 @@ async function applyIdentity(req: Request, token: string): Promise<void> {
     req.headers['x-org-id'] = p.org_id;
   }
   req.headers['x-user-type'] = p.user_type;
+  if (p.phone_number !== null && p.phone_number !== undefined) {
+    req.headers['x-user-phone'] = p.phone_number;
+  }
   req.headers['x-user-roles'] = JSON.stringify(p.role_slugs);
   req.headers['x-user-rules'] = JSON.stringify(p.rules);
   // X-Locale (explicit pick) > JWT claim (saved preference) > Accept-Language

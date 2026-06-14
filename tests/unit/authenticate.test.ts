@@ -40,6 +40,7 @@ const validPayload = {
   sub: 'user-uuid-123',
   org_id: 'org-uuid-456',
   user_type: 'staff' as const,
+  phone_number: '+250788123456',
   role_slugs: ['admin'],
   rules: [],
   locale: 'rw',
@@ -65,6 +66,7 @@ describe('authenticate middleware', () => {
     expect(req.headers['x-user-id']).toBe(validPayload.sub);
     expect(req.headers['x-org-id']).toBe(validPayload.org_id);
     expect(req.headers['x-user-type']).toBe(validPayload.user_type);
+    expect(req.headers['x-user-phone']).toBe(validPayload.phone_number);
     expect(req.headers['x-user-roles']).toBe(JSON.stringify(validPayload.role_slugs));
     expect(req.headers['x-user-rules']).toBe(JSON.stringify(validPayload.rules));
     expect(req.headers['x-user-locale']).toBe('rw');
@@ -129,5 +131,17 @@ describe('authenticate middleware', () => {
 
     expect(next).toHaveBeenCalledOnce();
     expect(req.headers['x-org-id']).toBeUndefined();
+  });
+
+  it('phone_number: null → x-user-phone header is omitted (not set to "null")', async () => {
+    mockJwtVerify.mockResolvedValueOnce({ payload: { ...validPayload, phone_number: null } });
+    const req = makeReq({ headers: { authorization: 'Bearer valid-token' } });
+    const { res } = makeRes();
+    const next: NextFunction = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalledOnce();
+    expect(req.headers['x-user-phone']).toBeUndefined();
   });
 });

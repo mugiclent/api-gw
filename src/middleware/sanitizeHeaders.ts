@@ -14,6 +14,7 @@ const SPOOFABLE_IDENTITY_HEADERS = [
   'x-user-id',
   'x-org-id',
   'x-user-type',
+  'x-user-phone',
   'x-user-roles',
   'x-user-rules',
   'x-session-id',
