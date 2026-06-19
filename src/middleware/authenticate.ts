@@ -9,6 +9,7 @@ interface JwtPayload {
   org_id: string | null;
   user_type: 'passenger' | 'staff';
   phone_number?: string | null;
+  name?: string | null;
   role_slugs: string[];
   rules: unknown[];
   locale?: string;
@@ -61,6 +62,9 @@ async function applyIdentity(req: Request, token: string): Promise<void> {
   req.headers['x-user-type'] = p.user_type;
   if (p.phone_number !== null && p.phone_number !== undefined) {
     req.headers['x-user-phone'] = p.phone_number;
+  }
+  if (p.name !== null && p.name !== undefined && p.name !== '') {
+    req.headers['x-user-name'] = p.name;
   }
   req.headers['x-user-roles'] = JSON.stringify(p.role_slugs);
   req.headers['x-user-rules'] = JSON.stringify(p.rules);
